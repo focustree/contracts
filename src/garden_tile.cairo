@@ -7,13 +7,29 @@ mod GardenTile {
     use starknet::get_caller_address;
 
     #[storage]
-    struct Storage {}
+    struct Storage {
+        _total_supply: u256,
+    }
 
     #[constructor]
     fn constructor(ref self: ContractState) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         InternalImpl::initializer(ref unsafe_state, 'Garden Tile', 'TILE');
         InternalImpl::_mint(ref unsafe_state, get_caller_address(), 0);
+        self._total_supply.write(1);
+    }
+
+    #[external(v0)]
+    fn mint(ref self: ContractState)  {
+        let mut unsafe_state = ERC721::unsafe_new_contract_state();
+        let supply = self._total_supply.read();
+        InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
+        self._total_supply.write(supply + 1);
+    }
+
+    #[external(v0)]
+    fn total_supply(self: @ContractState) -> u256 {
+        self._total_supply.read()
     }
 
     #[external(v0)]
