@@ -19,3 +19,11 @@ scarb build
 ```
 starkli declare target/dev/focustree_GardenTile.sierra.json --account ~/.starkli/braavos_test_account.json --private-key $BRAAVOS_TEST_PRIVATE_KEY
 ```
+
+4. Testnet contract class: https://testnet.starkscan.co/class/0x057d8eebbdfa419bce85d116b8f459855c899ff14d616415e10880ac66bd9f79
+
+5. Deploy `GardenTile` contract
+
+```
+starkli deploy 0x057d8eebbdfa419bce85d116b8f459855c899ff14d616415e10880ac66bd9f79 --account ~/.starkli/braavos_test_account.json --private-key $BRAAVOS_TEST_PRIVATE_KEY
+```

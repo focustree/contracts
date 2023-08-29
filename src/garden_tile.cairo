@@ -10,13 +10,10 @@ mod GardenTile {
     struct Storage {}
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState, name: felt252, symbol: felt252, token_id: u256, uri: felt252
-    ) {
+    fn constructor(ref self: ContractState) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         InternalImpl::initializer(ref unsafe_state, 'Garden Tile', 'TILE');
-        InternalImpl::_mint(ref unsafe_state, get_caller_address(), token_id);
-        InternalImpl::_set_token_uri(ref unsafe_state, token_id, uri);
+        InternalImpl::_mint(ref unsafe_state, get_caller_address(), 0);
     }
 
     #[external(v0)]
