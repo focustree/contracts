@@ -32,9 +32,9 @@ mod GardenTile {
     fn constructor(ref self: ContractState) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         ERC721::InternalImpl::initializer(ref unsafe_state, 'Garden Tile', 'TILE');
-        self._total_supply.write(1);
     }
-    
+
+    #[external(v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
         fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
             let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
@@ -43,17 +43,23 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn mint(ref self: ContractState, class_id: u128, signature_r: felt252, signature_s: felt252 )  {
+    fn mint(ref self: ContractState, class_id: u128, signature_r: felt252, signature_s: felt252) {
         let message_hash = message_hash(class_id);
-        assert(verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature');
+        assert(
+            verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature'
+        );
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
         ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
         self._total_supply.write(supply + 1);
     }
 
-    fn verify_signature(ref self: ContractState, message_hash:felt252,signature_r: felt252, signature_s: felt252)->bool{
-        return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),signature_r, signature_s);
+    fn verify_signature(
+        ref self: ContractState, message_hash: felt252, signature_r: felt252, signature_s: felt252
+    ) -> bool {
+        return ecdsa::check_ecdsa_signature(
+            message_hash, self._signer.read(), signature_r, signature_s
+        );
     }
 
     //should be only called by the owner of the contract
@@ -62,7 +68,7 @@ mod GardenTile {
         self._signer.write(signer);
     }
 
-    fn message_hash(class_id: u128 ) -> felt252 {
+    fn message_hash(class_id: u128) -> felt252 {
         let contract_address = contract_address_to_felt252(get_contract_address());
         let caller_address = contract_address_to_felt252(get_caller_address());
 
@@ -76,7 +82,7 @@ mod GardenTile {
         self._total_supply.read()
     }
 
-     #[external(v0)]
+    #[external(v0)]
     fn get_signer(self: @ContractState) -> felt252 {
         self._signer.read()
     }
