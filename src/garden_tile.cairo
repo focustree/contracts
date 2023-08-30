@@ -27,20 +27,17 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn mint(ref self: ContractState, class_id: u256, signature:Span<felt252> )  {
+    fn mint(ref self: ContractState, class_id: u256, signature_r: felt252, signature_s: felt252 )  {
         let message_hash = message_hash(class_id);
-        assert(verify_signature(@self, message_hash, signature), "Unvalid Signature");
+        assert(verify_signature(@self, message_hash, signature_r, signature_s), "Unvalid Signature");
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
         InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
         self._total_supply.write(supply + 1);
     }
 
-    fn verify_signature(self: @ContractState, message_hash:felt252,signature:Span<felt252>)->bool{
-        if signature.len() == 2_u32 {
-            return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),*signature.at(0_u32),*signature.at(1_u32));
-        }
-        return false;
+    fn verify_signature(self: @ContractState, message_hash:felt252,signature_r: felt252, signature_s: felt252)->bool{
+        return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),signature_r, signature_s);
     }
 
     //should be only called by the owner of the contract
