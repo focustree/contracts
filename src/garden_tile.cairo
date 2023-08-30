@@ -1,15 +1,21 @@
 #[starknet::contract]
 mod GardenTile {
+    use core::traits::Into;
+    use core::array::ArrayTrait;
     use openzeppelin::token::erc721::ERC721::ERC721Impl;
     use openzeppelin::token::erc721::ERC721::InternalImpl;
     use openzeppelin::token::erc721::ERC721;
     use starknet::ContractAddress;
     use starknet::get_caller_address;
+    use starknet::get_contract_address;
+    use starknet::contract_address_to_felt252;
     use core::ecdsa;
+    use hash::{TupleSize3Hash, HashFelt252, LegacyHash};
 
     #[storage]
     struct Storage {
         _total_supply: u256,
+        _signer: felt252,
     }
 
     #[constructor]
@@ -45,6 +51,34 @@ mod GardenTile {
         let signature_s = 0x677ae6bba6daf00d2631fab14c8acf24be6579f9d9e98f67aa7f2770e57a1f5;
 
         return ecdsa::recover_public_key(:message_hash, :signature_r, :signature_s, :y_parity);
+    }
+
+    fn logic_that_verifies_signature(self: @ContractState, message_hash:felt252,signature:Span<felt252>)->bool{
+        if signature.len() == 2_u32 {
+            return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),*signature.at(0_u32),*signature.at(1_u32));
+        }
+        return false;
+    }
+
+    //should be only called by the owner of the contract
+    #[external(v0)]
+    fn set_signer(ref self: ContractState, signer: felt252) {
+        self._signer.write(signer);
+    }
+
+    #[external(v0)]
+    fn test_hash(self: @ContractState, class_id: u256 ) -> felt252 {
+
+        let contract_address = contract_address_to_felt252(get_contract_address());
+        let caller_address = contract_address_to_felt252(get_caller_address());
+
+        let mut message_hash = LegacyHash::hash(0, contract_address);
+        message_hash = LegacyHash::hash(message_hash, caller_address);
+        message_hash = LegacyHash::hash(message_hash, class_id);
+
+        //let mut message_hash = TupleSize3Hash::update_state(0, (contract_address, caller_address, class_id));
+
+        return message_hash;
     }
 
     #[external(v0)]
