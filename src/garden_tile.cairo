@@ -8,10 +8,11 @@ trait IGardenTile<TState> {
 
 #[starknet::contract]
 mod GardenTile {
-    use openzeppelin::token::erc721::ERC721::ERC721Impl;
     use openzeppelin::token::erc721::ERC721;
     use openzeppelin::upgrades::interface::IUpgradeable;
     use openzeppelin::upgrades::upgradeable::Upgradeable;
+    use openzeppelin::access::ownable::interface::IOwnable;
+    use openzeppelin::access::ownable::ownable::Ownable;
 
     use starknet::ContractAddress;
     use starknet::ClassHash;
@@ -39,6 +40,24 @@ mod GardenTile {
         fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
             let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
             Upgradeable::InternalImpl::_upgrade(ref unsafe_state, impl_hash);
+        }
+    }
+
+    #[external(v0)]
+    impl OwnableImpl of IOwnable<ContractState> {
+        fn owner(self: @ContractState) -> ContractAddress {
+            let unsafe_state = Ownable::unsafe_new_contract_state();
+            Ownable::OwnableImpl::owner(@unsafe_state)
+        }
+
+        fn transfer_ownership(ref self: ContractState, new_owner: ContractAddress) {
+            let mut unsafe_state = Ownable::unsafe_new_contract_state();
+            Ownable::OwnableImpl::transfer_ownership(ref unsafe_state, new_owner);
+        }
+
+        fn renounce_ownership(ref self: ContractState) {
+            let mut unsafe_state = Ownable::unsafe_new_contract_state();
+            Ownable::OwnableImpl::renounce_ownership(ref unsafe_state);
         }
     }
 
@@ -114,19 +133,19 @@ mod GardenTile {
     #[external(v0)]
     fn balance_of(self: @ContractState, account: ContractAddress) -> u256 {
         let unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::balance_of(@unsafe_state, account)
+        ERC721::ERC721Impl::balance_of(@unsafe_state, account)
     }
 
     #[external(v0)]
     fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress {
         let unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::owner_of(@unsafe_state, token_id)
+        ERC721::ERC721Impl::owner_of(@unsafe_state, token_id)
     }
 
     #[external(v0)]
     fn get_approved(self: @ContractState, token_id: u256) -> ContractAddress {
         let unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::get_approved(@unsafe_state, token_id)
+        ERC721::ERC721Impl::get_approved(@unsafe_state, token_id)
     }
 
     #[external(v0)]
@@ -134,19 +153,19 @@ mod GardenTile {
         self: @ContractState, owner: ContractAddress, operator: ContractAddress
     ) -> bool {
         let unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::is_approved_for_all(@unsafe_state, owner, operator)
+        ERC721::ERC721Impl::is_approved_for_all(@unsafe_state, owner, operator)
     }
 
     #[external(v0)]
     fn approve(ref self: ContractState, to: ContractAddress, token_id: u256) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::approve(ref unsafe_state, to, token_id)
+        ERC721::ERC721Impl::approve(ref unsafe_state, to, token_id)
     }
 
     #[external(v0)]
     fn set_approval_for_all(ref self: ContractState, operator: ContractAddress, approved: bool) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::set_approval_for_all(ref unsafe_state, operator, approved)
+        ERC721::ERC721Impl::set_approval_for_all(ref unsafe_state, operator, approved)
     }
 
     #[external(v0)]
@@ -154,7 +173,7 @@ mod GardenTile {
         ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u256
     ) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::transfer_from(ref unsafe_state, from, to, token_id)
+        ERC721::ERC721Impl::transfer_from(ref unsafe_state, from, to, token_id)
     }
 
     #[external(v0)]
@@ -166,6 +185,6 @@ mod GardenTile {
         data: Span<felt252>
     ) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721Impl::safe_transfer_from(ref unsafe_state, from, to, token_id, data)
+        ERC721::ERC721Impl::safe_transfer_from(ref unsafe_state, from, to, token_id, data)
     }
 }
