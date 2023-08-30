@@ -1,7 +1,5 @@
 #[starknet::contract]
 mod GardenTile {
-    use core::traits::Into;
-    use core::array::ArrayTrait;
     use openzeppelin::token::erc721::ERC721::ERC721Impl;
     use openzeppelin::token::erc721::ERC721::InternalImpl;
     use openzeppelin::token::erc721::ERC721;
@@ -10,7 +8,7 @@ mod GardenTile {
     use starknet::get_contract_address;
     use starknet::contract_address_to_felt252;
     use core::ecdsa;
-    use hash::{LegacyHash};
+    use hash::LegacyHash;
 
     #[storage]
     struct Storage {
@@ -29,14 +27,25 @@ mod GardenTile {
     #[external(v0)]
     fn mint(ref self: ContractState, class_id: u256, signature_r: felt252, signature_s: felt252 )  {
         let message_hash = message_hash(class_id);
-        assert(verify_signature(@self, message_hash, signature_r, signature_s), "Unvalid Signature");
+        assert(verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature');
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
         InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
         self._total_supply.write(supply + 1);
     }
 
-    fn verify_signature(self: @ContractState, message_hash:felt252,signature_r: felt252, signature_s: felt252)->bool{
+    fn verify_signature(ref self: ContractState, message_hash:felt252,signature_r: felt252, signature_s: felt252)->bool{
+        return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),signature_r, signature_s);
+    }
+
+    #[external(v0)]
+    fn test_message_hash(self: @ContractState, class_id: u256) -> felt252 {
+        let message_hash = message_hash(class_id);
+        return message_hash;
+    }
+
+    #[external(v0)]
+    fn test_verify_signature(self: @ContractState,message_hash:felt252,signature_r: felt252, signature_s: felt252 ) -> bool {
         return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),signature_r, signature_s);
     }
 
