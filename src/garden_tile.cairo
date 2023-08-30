@@ -2,6 +2,7 @@ use starknet::ClassHash;
 
 #[starknet::interface]
 trait IGardenTile<TState> {
+    // IUpgradeable
     fn upgrade(ref self: TState, impl_hash: ClassHash);
 }
 
