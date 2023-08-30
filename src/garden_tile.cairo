@@ -1,10 +1,23 @@
+use starknet::ClassHash;
+
+#[starknet::interface]
+trait IGardenTile<TState> {
+    fn upgrade(ref self: TState, impl_hash: ClassHash);
+}
+
 #[starknet::contract]
 mod GardenTile {
     use openzeppelin::token::erc721::ERC721::ERC721Impl;
-    use openzeppelin::token::erc721::ERC721::InternalImpl;
     use openzeppelin::token::erc721::ERC721;
+    use openzeppelin::upgrades::interface::IUpgradeable;
+    use openzeppelin::upgrades::upgradeable::Upgradeable;
+
     use starknet::ContractAddress;
+    use starknet::ClassHash;
     use starknet::get_caller_address;
+
+    use debug::PrintTrait;
+
     use core::ecdsa;
 
     #[storage]
@@ -15,16 +28,23 @@ mod GardenTile {
     #[constructor]
     fn constructor(ref self: ContractState) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
-        InternalImpl::initializer(ref unsafe_state, 'Garden Tile', 'TILE');
-        InternalImpl::_mint(ref unsafe_state, get_caller_address(), 0);
+        ERC721::InternalImpl::initializer(ref unsafe_state, 'Garden Tile', 'TILE');
         self._total_supply.write(1);
     }
 
     #[external(v0)]
-    fn mint(ref self: ContractState)  {
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
+            let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
+            Upgradeable::InternalImpl::_upgrade(ref unsafe_state, impl_hash);
+        }
+    }
+
+    #[external(v0)]
+    fn mint(ref self: ContractState) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
-        InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
+        ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
         self._total_supply.write(supply + 1);
     }
 

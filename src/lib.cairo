@@ -1,5 +1,5 @@
 mod garden_tile;
-// #[cfg(test)]
-// mod tests;
 
+#[cfg(test)]
+mod tests;
 
