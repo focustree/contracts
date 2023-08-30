@@ -10,7 +10,7 @@ mod GardenTile {
     use starknet::get_contract_address;
     use starknet::contract_address_to_felt252;
     use core::ecdsa;
-    use hash::{TupleSize3Hash, HashFelt252, LegacyHash};
+    use hash::{LegacyHash};
 
     #[storage]
     struct Storage {
@@ -27,33 +27,16 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn mint(ref self: ContractState)  {
+    fn mint(ref self: ContractState, class_id: u256, signature:Span<felt252> )  {
+        let message_hash = message_hash(class_id);
+        assert(verify_signature(@self, message_hash, signature), "Unvalid Signature");
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
         InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
         self._total_supply.write(supply + 1);
     }
 
-    #[external(v0)]
-    fn test_check_ecdsa_signature(self: @ContractState) -> bool {
-        let message_hash = 0x503f4bea29baee10b22a7f10bdc82dda071c977c1f25b8f3973d34e6b03b2c;
-        let public_key = 0x7b7454acbe7845da996377f85eb0892044d75ae95d04d3325a391951f35d2ec;
-        let signature_r = 0xbe96d72eb4f94078192c2e84d5230cde2a70f4b45c8797e2c907acff5060bb;
-        let signature_s = 0x677ae6bba6daf00d2631fab14c8acf24be6579f9d9e98f67aa7f2770e57a1f5;
-
-        return ecdsa::check_ecdsa_signature(:message_hash, :public_key, :signature_r, :signature_s);
-    }
-
-    #[external(v0)]
-    fn test_recover_public_key(self: @ContractState, y_parity: bool) -> Option<felt252> {
-        let message_hash = 0x503f4bea29baee10b22a7f10bdc82dda071c977c1f25b8f3973d34e6b03b2c;
-        let signature_r = 0xbe96d72eb4f94078192c2e84d5230cde2a70f4b45c8797e2c907acff5060bb;
-        let signature_s = 0x677ae6bba6daf00d2631fab14c8acf24be6579f9d9e98f67aa7f2770e57a1f5;
-
-        return ecdsa::recover_public_key(:message_hash, :signature_r, :signature_s, :y_parity);
-    }
-
-    fn logic_that_verifies_signature(self: @ContractState, message_hash:felt252,signature:Span<felt252>)->bool{
+    fn verify_signature(self: @ContractState, message_hash:felt252,signature:Span<felt252>)->bool{
         if signature.len() == 2_u32 {
             return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),*signature.at(0_u32),*signature.at(1_u32));
         }
@@ -66,17 +49,13 @@ mod GardenTile {
         self._signer.write(signer);
     }
 
-    #[external(v0)]
-    fn test_hash(self: @ContractState, class_id: u256 ) -> felt252 {
-
+    fn message_hash(class_id: u256 ) -> felt252 {
         let contract_address = contract_address_to_felt252(get_contract_address());
         let caller_address = contract_address_to_felt252(get_caller_address());
 
         let mut message_hash = LegacyHash::hash(0, contract_address);
         message_hash = LegacyHash::hash(message_hash, caller_address);
         message_hash = LegacyHash::hash(message_hash, class_id);
-
-        //let mut message_hash = TupleSize3Hash::update_state(0, (contract_address, caller_address, class_id));
 
         return message_hash;
     }
