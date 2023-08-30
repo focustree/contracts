@@ -25,7 +25,7 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn mint(ref self: ContractState, class_id: u256, signature_r: felt252, signature_s: felt252 )  {
+    fn mint(ref self: ContractState, class_id: u128, signature_r: felt252, signature_s: felt252 )  {
         let message_hash = message_hash(class_id);
         assert(verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature');
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
@@ -39,9 +39,8 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn test_message_hash(self: @ContractState, class_id: u256) -> felt252 {
-        let message_hash = message_hash(class_id);
-        return message_hash;
+    fn test_message_hash(self: @ContractState, class_id: u128, contract_address: felt252, caller_address: felt252) -> felt252 {
+        return LegacyHash::hash(0, (contract_address, caller_address, class_id,3));
     }
 
     #[external(v0)]
@@ -55,13 +54,11 @@ mod GardenTile {
         self._signer.write(signer);
     }
 
-    fn message_hash(class_id: u256 ) -> felt252 {
+    fn message_hash(class_id: u128 ) -> felt252 {
         let contract_address = contract_address_to_felt252(get_contract_address());
         let caller_address = contract_address_to_felt252(get_caller_address());
 
-        let mut message_hash = LegacyHash::hash(0, contract_address);
-        message_hash = LegacyHash::hash(message_hash, caller_address);
-        message_hash = LegacyHash::hash(message_hash, class_id);
+        let mut message_hash = LegacyHash::hash(0, (contract_address, caller_address, class_id, 3));
 
         return message_hash;
     }
@@ -69,6 +66,11 @@ mod GardenTile {
     #[external(v0)]
     fn total_supply(self: @ContractState) -> u256 {
         self._total_supply.read()
+    }
+
+     #[external(v0)]
+    fn get_signer(self: @ContractState) -> felt252 {
+        self._signer.read()
     }
 
     #[external(v0)]
