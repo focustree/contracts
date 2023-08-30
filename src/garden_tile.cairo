@@ -38,16 +38,6 @@ mod GardenTile {
         return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),signature_r, signature_s);
     }
 
-    #[external(v0)]
-    fn test_message_hash(self: @ContractState, class_id: u128, contract_address: felt252, caller_address: felt252) -> felt252 {
-        return LegacyHash::hash(0, (contract_address, caller_address, class_id,3));
-    }
-
-    #[external(v0)]
-    fn test_verify_signature(self: @ContractState,message_hash:felt252,signature_r: felt252, signature_s: felt252 ) -> bool {
-        return ecdsa::check_ecdsa_signature(message_hash,self._signer.read(),signature_r, signature_s);
-    }
-
     //should be only called by the owner of the contract
     #[external(v0)]
     fn set_signer(ref self: ContractState, signer: felt252) {
