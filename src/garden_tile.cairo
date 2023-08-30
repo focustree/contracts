@@ -16,21 +16,22 @@ mod GardenTile {
     use starknet::ContractAddress;
     use starknet::ClassHash;
     use starknet::get_caller_address;
-
+    use starknet::get_contract_address;
+    use starknet::contract_address_to_felt252;
     use debug::PrintTrait;
-
     use core::ecdsa;
+    use hash::LegacyHash;
 
     #[storage]
     struct Storage {
         _total_supply: u256,
+        _signer: felt252,
     }
 
     #[constructor]
     fn constructor(ref self: ContractState) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         ERC721::InternalImpl::initializer(ref unsafe_state, 'Garden Tile', 'TILE');
-        self._total_supply.write(1);
     }
 
     #[external(v0)]
@@ -42,35 +43,48 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn mint(ref self: ContractState) {
+    fn mint(ref self: ContractState, class_id: u128, signature_r: felt252, signature_s: felt252) {
+        let message_hash = message_hash(class_id);
+        assert(
+            verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature'
+        );
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
         ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
         self._total_supply.write(supply + 1);
     }
 
-    #[external(v0)]
-    fn test_check_ecdsa_signature(self: @ContractState) -> bool {
-        let message_hash = 0x503f4bea29baee10b22a7f10bdc82dda071c977c1f25b8f3973d34e6b03b2c;
-        let public_key = 0x7b7454acbe7845da996377f85eb0892044d75ae95d04d3325a391951f35d2ec;
-        let signature_r = 0xbe96d72eb4f94078192c2e84d5230cde2a70f4b45c8797e2c907acff5060bb;
-        let signature_s = 0x677ae6bba6daf00d2631fab14c8acf24be6579f9d9e98f67aa7f2770e57a1f5;
-
-        return ecdsa::check_ecdsa_signature(:message_hash, :public_key, :signature_r, :signature_s);
+    fn verify_signature(
+        ref self: ContractState, message_hash: felt252, signature_r: felt252, signature_s: felt252
+    ) -> bool {
+        return ecdsa::check_ecdsa_signature(
+            message_hash, self._signer.read(), signature_r, signature_s
+        );
     }
 
+    //should be only called by the owner of the contract
     #[external(v0)]
-    fn test_recover_public_key(self: @ContractState, y_parity: bool) -> Option<felt252> {
-        let message_hash = 0x503f4bea29baee10b22a7f10bdc82dda071c977c1f25b8f3973d34e6b03b2c;
-        let signature_r = 0xbe96d72eb4f94078192c2e84d5230cde2a70f4b45c8797e2c907acff5060bb;
-        let signature_s = 0x677ae6bba6daf00d2631fab14c8acf24be6579f9d9e98f67aa7f2770e57a1f5;
+    fn set_signer(ref self: ContractState, signer: felt252) {
+        self._signer.write(signer);
+    }
 
-        return ecdsa::recover_public_key(:message_hash, :signature_r, :signature_s, :y_parity);
+    fn message_hash(class_id: u128) -> felt252 {
+        let contract_address = contract_address_to_felt252(get_contract_address());
+        let caller_address = contract_address_to_felt252(get_caller_address());
+
+        let mut message_hash = LegacyHash::hash(0, (contract_address, caller_address, class_id, 3));
+
+        return message_hash;
     }
 
     #[external(v0)]
     fn total_supply(self: @ContractState) -> u256 {
         self._total_supply.read()
+    }
+
+    #[external(v0)]
+    fn get_signer(self: @ContractState) -> felt252 {
+        self._signer.read()
     }
 
     #[external(v0)]
