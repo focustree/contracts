@@ -29,6 +29,7 @@ mod GardenTile {
     struct Storage {
         _total_supply: u256,
         _signer: felt252,
+        _is_tile_minted: LegacyMap<u128, bool>,
     }
 
     #[constructor]
@@ -140,15 +141,17 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn mint(ref self: ContractState, class_id: u128, signature_r: felt252, signature_s: felt252) {
-        let message_hash = message_hash(class_id);
+    fn mint(ref self: ContractState, tile_id: u128, signature_r: felt252, signature_s: felt252) {
+        assert(self._is_tile_minted.read(tile_id) == false, 'Tile already minted');
+        let message_hash = message_hash(tile_id);
         assert(
             verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature'
         );
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
-        ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
         self._total_supply.write(supply + 1);
+        self._is_tile_minted.write(tile_id, true);
+        ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
     }
 
     fn verify_signature(
@@ -166,11 +169,11 @@ mod GardenTile {
         self._signer.write(signer);
     }
 
-    fn message_hash(class_id: u128) -> felt252 {
+    fn message_hash(tile_id: u128) -> felt252 {
         let contract_address = contract_address_to_felt252(get_contract_address());
         let caller_address = contract_address_to_felt252(get_caller_address());
 
-        let mut message_hash = LegacyHash::hash(0, (contract_address, caller_address, class_id, 3));
+        let mut message_hash = LegacyHash::hash(0, (contract_address, caller_address, tile_id, 3));
 
         return message_hash;
     }
