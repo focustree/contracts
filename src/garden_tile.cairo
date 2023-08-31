@@ -40,6 +40,8 @@ mod GardenTile {
     #[external(v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
         fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
+            let unsafe_state_ownable = Ownable::unsafe_new_contract_state();
+            Ownable::InternalImpl::assert_only_owner(@unsafe_state_ownable);
             let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
             Upgradeable::InternalImpl::_upgrade(ref unsafe_state, impl_hash);
         }
@@ -157,9 +159,10 @@ mod GardenTile {
         );
     }
 
-    //should be only called by the owner of the contract
     #[external(v0)]
     fn set_signer(ref self: ContractState, signer: felt252) {
+        let unsafe_state = Ownable::unsafe_new_contract_state();
+        Ownable::InternalImpl::assert_only_owner(@unsafe_state);
         self._signer.write(signer);
     }
 
