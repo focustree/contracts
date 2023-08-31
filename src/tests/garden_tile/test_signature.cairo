@@ -39,3 +39,13 @@ fn test_set_signer_when_not_owner() {
     GardenTile::set_signer(ref state, signer);
 }
 
+#[test]
+#[available_gas(2000000)]
+fn test_message_hash() {
+    let mut state = setup();
+    set_caller_address(OWNER());
+    let tile_id: u128 = 14;
+
+    let message_hash = GardenTile::message_hash(tile_id);
+    message_hash.print();
+}
