@@ -26,7 +26,7 @@ fn test_set_signer_when_owner() {
     let signer = 0x6456f9bc55067882db6e28461aa53a5cb38c55b14b82211fe3844e62c143670;
     GardenTile::set_signer(ref state, signer);
     let res = GardenTile::get_signer(@state);
-    assert(res==signer , 'Signer not setted well');
+    assert(res == signer, 'Signer not setted well');
 }
 
 #[test]
