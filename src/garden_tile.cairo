@@ -25,6 +25,7 @@ mod GardenTile {
     use core::ecdsa;
     use hash::LegacyHash;
 
+
     #[storage]
     struct Storage {
         _total_supply: u256,
@@ -34,8 +35,12 @@ mod GardenTile {
 
     #[constructor]
     fn constructor(ref self: ContractState) {
-        let mut unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721::InternalImpl::initializer(ref unsafe_state, 'Garden Tile', 'TILE');
+        let mut unsafe_ownable_state = Ownable::unsafe_new_contract_state();
+        let owner = get_caller_address();
+        Ownable::InternalImpl::initializer(ref unsafe_ownable_state, owner);
+
+        let mut unsafe_erc721_state = ERC721::unsafe_new_contract_state();
+        ERC721::InternalImpl::initializer(ref unsafe_erc721_state, 'Garden Tile', 'TILE');
     }
 
     #[external(v0)]
