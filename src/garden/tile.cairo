@@ -1,11 +1,3 @@
-use starknet::ClassHash;
-
-#[starknet::interface]
-trait IGardenTile<TState> {
-    // IUpgradeable
-    fn upgrade(ref self: TState, impl_hash: ClassHash);
-}
-
 #[starknet::contract]
 mod GardenTile {
     use openzeppelin::token::erc721::ERC721;
@@ -13,8 +5,8 @@ mod GardenTile {
     use openzeppelin::token::erc721::interface::IERC721Metadata;
     use openzeppelin::upgrades::interface::IUpgradeable;
     use openzeppelin::upgrades::upgradeable::Upgradeable;
-    use openzeppelin::access::ownable::interface::IOwnable;
-    use openzeppelin::access::ownable::ownable::Ownable;
+    use openzeppelin::access::ownable::{interface::IOwnable, ownable::Ownable};
+    use openzeppelin::introspection::interface::ISRC5;
 
     use starknet::ContractAddress;
     use starknet::ClassHash;
@@ -146,6 +138,14 @@ mod GardenTile {
     }
 
     #[external(v0)]
+    impl SRC5Impl of ISRC5<ContractState> {
+        fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
+            let unsafe_state = ERC721::unsafe_new_contract_state();
+            ERC721::SRC5Impl::supports_interface(@unsafe_state, interface_id)
+        }
+    }
+
+    #[external(v0)]
     fn mint(ref self: ContractState, tile_id: u128, signature_r: felt252, signature_s: felt252) {
         assert(self._is_tile_minted.read(tile_id) == false, 'Tile already minted');
         let message_hash = message_hash(tile_id);
@@ -158,6 +158,7 @@ mod GardenTile {
         self._is_tile_minted.write(tile_id, true);
         ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
     }
+
 
     fn verify_signature(
         ref self: ContractState, message_hash: felt252, signature_r: felt252, signature_s: felt252
@@ -191,11 +192,5 @@ mod GardenTile {
     #[external(v0)]
     fn get_signer(self: @ContractState) -> felt252 {
         self._signer.read()
-    }
-
-    #[external(v0)]
-    fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
-        let unsafe_state = ERC721::unsafe_new_contract_state();
-        ERC721::SRC5Impl::supports_interface(@unsafe_state, interface_id)
     }
 }

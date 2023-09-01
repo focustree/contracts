@@ -1,4 +1,4 @@
-use focustree::garden_tile::GardenTile;
+use focustree::garden::tile::GardenTile;
 use starknet::{
     ClassHash, ContractAddress, contract_address_const, get_caller_address,
     testing::{set_account_contract_address, set_contract_address, set_caller_address}
