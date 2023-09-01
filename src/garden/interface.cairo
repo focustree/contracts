@@ -1,7 +1,7 @@
 use starknet::{ClassHash, ContractAddress, account::Call};
 
 #[starknet::interface]
-trait TileABI<TState> {
+trait GardenTileABI<TState> {
     // Upgradeable
     fn upgrade(ref self: TState, impl_hash: ClassHash);
 

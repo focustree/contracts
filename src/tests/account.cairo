@@ -1,1 +1,1 @@
-mod test_account_upgradeable;
+mod test_upgradeable;

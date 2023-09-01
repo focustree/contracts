@@ -1,22 +1,23 @@
-use openzeppelin::tests::utils::{constants::{OWNER}, deploy};
-use focustree::garden::{tile::GardenTile, interface::{TileABIDispatcher, TileABIDispatcherTrait}};
-use focustree::tests::mocks::toto::{Toto, ITotoDispatcher, ITotoDispatcherTrait};
-
 use starknet::{
     ClassHash, ContractAddress, contract_address_const, get_caller_address,
     testing::{set_account_contract_address, set_contract_address}
 };
+use openzeppelin::tests::utils::{constants::{OWNER}, deploy};
+use focustree::garden::{
+    tile::GardenTile, interface::{GardenTileABIDispatcher, GardenTileABIDispatcherTrait}
+};
+use focustree::tests::mocks::toto::{Toto, ITotoDispatcher, ITotoDispatcherTrait};
 use debug::PrintTrait;
 
 //
 // Setup
 //
 
-fn deploy_garden_tile() -> TileABIDispatcher {
+fn deploy_garden_tile() -> GardenTileABIDispatcher {
     set_contract_address(OWNER());
     let calldata: Array<felt252> = array![];
     let address: ContractAddress = deploy(GardenTile::TEST_CLASS_HASH, calldata);
-    TileABIDispatcher { contract_address: address }
+    GardenTileABIDispatcher { contract_address: address }
 }
 
 //
