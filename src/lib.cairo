@@ -1,4 +1,5 @@
-mod garden_tile;
+mod garden;
+mod account;
 
 #[cfg(test)]
 mod tests;
