@@ -13,6 +13,7 @@ mod GardenTile {
     use starknet::get_caller_address;
     use starknet::get_contract_address;
     use starknet::contract_address_to_felt252;
+    use starknet::contract_address_const;
     use debug::PrintTrait;
     use core::ecdsa;
     use hash::LegacyHash;
@@ -28,7 +29,7 @@ mod GardenTile {
     #[constructor]
     fn constructor(ref self: ContractState) {
         let mut unsafe_ownable_state = Ownable::unsafe_new_contract_state();
-        let owner = get_caller_address();
+        let owner = contract_address_const::<0x05161ae78b651b239167b3ed0c1b2f09983cbd9ff433c14fb31472ce8008ac1d>();
         Ownable::InternalImpl::initializer(ref unsafe_ownable_state, owner);
 
         let mut unsafe_erc721_state = ERC721::unsafe_new_contract_state();
@@ -156,9 +157,9 @@ mod GardenTile {
         let supply = self._total_supply.read();
         self._total_supply.write(supply + 1);
         self._is_tile_minted.write(tile_id, true);
-        ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), supply);
+        let tile_id_u256 = u256{low: tile_id, high: 0};
+        ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), tile_id_u256);
     }
-
 
     fn verify_signature(
         ref self: ContractState, message_hash: felt252, signature_r: felt252, signature_s: felt252
