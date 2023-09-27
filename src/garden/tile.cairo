@@ -26,9 +26,30 @@ mod GardenTile {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        Transfer: ERC721::Transfer,
-        Approval: ERC721::Approval,
-        ApprovalForAll: ERC721::ApprovalForAll,
+        Transfer: Transfer,
+        Approval: Approval,
+        ApprovalForAll: ApprovalForAll
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct Transfer {
+        from: ContractAddress,
+        to: ContractAddress,
+        token_id: u256
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct Approval {
+        owner: ContractAddress,
+        approved: ContractAddress,
+        token_id: u256
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct ApprovalForAll {
+        owner: ContractAddress,
+        operator: ContractAddress,
+        approved: bool
     }
 
     #[constructor]
