@@ -1,10 +1,7 @@
 #[starknet::contract]
 mod GardenTile {
-    use openzeppelin::token::erc721::ERC721;
-    use openzeppelin::token::erc721::interface::IERC721;
-    use openzeppelin::token::erc721::interface::IERC721Metadata;
-    use openzeppelin::upgrades::interface::IUpgradeable;
-    use openzeppelin::upgrades::upgradeable::Upgradeable;
+    use openzeppelin::token::erc721::{ERC721, interface::{IERC721, IERC721Metadata}};
+    use openzeppelin::upgrades::{upgradeable::Upgradeable, interface::IUpgradeable};
     use openzeppelin::access::ownable::{interface::IOwnable, ownable::Ownable};
     use openzeppelin::introspection::interface::ISRC5;
 
@@ -24,6 +21,14 @@ mod GardenTile {
         _total_supply: u256,
         _signer: felt252,
         _is_tile_minted: LegacyMap<u128, bool>,
+    }
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        Transfer: ERC721::Transfer,
+        Approval: ERC721::Approval,
+        ApprovalForAll: ERC721::ApprovalForAll,
     }
 
     #[constructor]
