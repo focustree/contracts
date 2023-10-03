@@ -1,12 +1,16 @@
 #[starknet::contract]
 mod FocusAccount {
+    use debug::PrintTrait;
     use array::ArrayTrait;
     use array::SpanTrait;
     use box::BoxTrait;
     use ecdsa::check_ecdsa_signature;
     use option::OptionTrait;
     use zeroable::Zeroable;
-    use starknet::{get_caller_address, get_contract_address, get_tx_info, ClassHash, account::Call};
+    use starknet::{
+        get_caller_address, get_contract_address, get_tx_info, ClassHash, account::Call,
+        ContractAddress
+    };
     use openzeppelin::account::{interface, account::{Account, PublicKeyTrait, PublicKeyCamelTrait}};
     use openzeppelin::introspection::{interface::{ISRC5, ISRC5Camel}, src5::SRC5};
     use openzeppelin::upgrades::upgradeable::Upgradeable;
@@ -29,6 +33,7 @@ mod FocusAccount {
     #[external(v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            Account::assert_only_self();
             let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
             Upgradeable::InternalImpl::_upgrade(ref unsafe_state, new_class_hash);
         }

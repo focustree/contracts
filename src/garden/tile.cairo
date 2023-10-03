@@ -1,19 +1,17 @@
 #[starknet::contract]
 mod GardenTile {
+    use debug::PrintTrait;
+    use core::ecdsa;
+    use hash::LegacyHash;
+    use starknet::{
+        get_caller_address, get_contract_address, get_tx_info, ClassHash, ContractAddress,
+        contract_address_to_felt252
+    };
     use openzeppelin::token::erc721::{ERC721, interface::{IERC721, IERC721Metadata}};
     use openzeppelin::upgrades::{upgradeable::Upgradeable};
     use openzeppelin::access::ownable::{interface::IOwnable, ownable::Ownable};
     use openzeppelin::introspection::interface::ISRC5;
     use focustree::upgrade::interface::IUpgradeable;
-
-    use starknet::ContractAddress;
-    use starknet::ClassHash;
-    use starknet::get_caller_address;
-    use starknet::get_contract_address;
-    use starknet::contract_address_to_felt252;
-    use debug::PrintTrait;
-    use core::ecdsa;
-    use hash::LegacyHash;
 
 
     #[storage]
