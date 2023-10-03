@@ -1,24 +1,3 @@
-use array::ArrayTrait;
-use array::SpanTrait;
-use option::OptionTrait;
-use serde::Serde;
-use starknet::{ContractAddress, account::Call};
-
-const TRANSACTION_VERSION: felt252 = 1;
-
-// 2**128 + TRANSACTION_VERSION
-const QUERY_VERSION: felt252 = 340282366920938463463374607431768211457;
-
-trait PublicKeyTrait<TState> {
-    fn set_public_key(ref self: TState, new_public_key: felt252);
-    fn get_public_key(self: @TState) -> felt252;
-}
-
-trait PublicKeyCamelTrait<TState> {
-    fn setPublicKey(ref self: TState, newPublicKey: felt252);
-    fn getPublicKey(self: @TState) -> felt252;
-}
-
 #[starknet::contract]
 mod FocusAccount {
     use array::ArrayTrait;
@@ -27,35 +6,15 @@ mod FocusAccount {
     use ecdsa::check_ecdsa_signature;
     use option::OptionTrait;
     use zeroable::Zeroable;
-    use starknet::{get_caller_address, get_contract_address, get_tx_info, ClassHash};
-    use openzeppelin::account::{interface, account::Account};
+    use starknet::{get_caller_address, get_contract_address, get_tx_info, ClassHash, account::Call};
+    use openzeppelin::account::{interface, account::{Account, PublicKeyTrait, PublicKeyCamelTrait}};
     use openzeppelin::introspection::{interface::{ISRC5, ISRC5Camel}, src5::SRC5};
     use openzeppelin::upgrades::upgradeable::Upgradeable;
     use focustree::upgrade::interface::IUpgradeable;
 
-    use super::Call;
-    use super::QUERY_VERSION;
-    use super::TRANSACTION_VERSION;
 
     #[storage]
     struct Storage {}
-
-    #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
-        OwnerAdded: OwnerAdded,
-        OwnerRemoved: OwnerRemoved,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct OwnerAdded {
-        new_owner_guid: felt252
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct OwnerRemoved {
-        removed_owner_guid: felt252
-    }
 
     #[constructor]
     fn constructor(ref self: ContractState, _public_key: felt252) {
@@ -69,9 +28,13 @@ mod FocusAccount {
 
     #[external(v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
-        fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
-            Upgradeable::InternalImpl::_upgrade(ref unsafe_state, impl_hash);
+            Upgradeable::InternalImpl::_upgrade(ref unsafe_state, new_class_hash);
+        }
+
+        fn version(self: @ContractState) -> felt252 {
+            1
         }
     }
 
@@ -130,7 +93,7 @@ mod FocusAccount {
     }
 
     #[external(v0)]
-    impl PublicKeyImpl of super::PublicKeyTrait<ContractState> {
+    impl PublicKeyImpl of PublicKeyTrait<ContractState> {
         fn get_public_key(self: @ContractState) -> felt252 {
             let unsafe_state = Account::unsafe_new_contract_state();
             Account::PublicKeyImpl::get_public_key(@unsafe_state)
@@ -143,7 +106,7 @@ mod FocusAccount {
     }
 
     #[external(v0)]
-    impl PublicKeyCamelImpl of super::PublicKeyCamelTrait<ContractState> {
+    impl PublicKeyCamelImpl of PublicKeyCamelTrait<ContractState> {
         fn getPublicKey(self: @ContractState) -> felt252 {
             let unsafe_state = Account::unsafe_new_contract_state();
             Account::PublicKeyImpl::get_public_key(@unsafe_state)

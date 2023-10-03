@@ -14,7 +14,7 @@ keywords = ["focustree", "starknet", "cairo", "contracts"]
 
 [dependencies]
 starknet = ">=2.2.0"
-openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", branch = "cairo-2" }
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.7.0" }
 core = ">=2.2.0"
 
 [lib]

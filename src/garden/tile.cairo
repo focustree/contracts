@@ -1,9 +1,10 @@
 #[starknet::contract]
 mod GardenTile {
     use openzeppelin::token::erc721::{ERC721, interface::{IERC721, IERC721Metadata}};
-    use openzeppelin::upgrades::{upgradeable::Upgradeable, interface::IUpgradeable};
+    use openzeppelin::upgrades::{upgradeable::Upgradeable};
     use openzeppelin::access::ownable::{interface::IOwnable, ownable::Ownable};
     use openzeppelin::introspection::interface::ISRC5;
+    use focustree::upgrade::interface::IUpgradeable;
 
     use starknet::ContractAddress;
     use starknet::ClassHash;
@@ -63,11 +64,15 @@ mod GardenTile {
 
     #[external(v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
-        fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             let unsafe_state_ownable = Ownable::unsafe_new_contract_state();
             Ownable::InternalImpl::assert_only_owner(@unsafe_state_ownable);
             let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
-            Upgradeable::InternalImpl::_upgrade(ref unsafe_state, impl_hash);
+            Upgradeable::InternalImpl::_upgrade(ref unsafe_state, new_class_hash);
+        }
+
+        fn version(self: @ContractState) -> felt252 {
+            1
         }
     }
 
