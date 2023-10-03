@@ -1,0 +1,10 @@
+#!/bin/zsh
+ACCOUNT_SIERRA_PATH=./target/dev/focustree_FocusAccount.sierra.json
+
+if [[ $1 == "declare" ]]; then
+    starkli declare --private-key $STARKNET_PRIVATE_KEY $ACCOUNT_SIERRA_PATH
+elif [[ $1 == "toto" ]]; then
+    echo "toto"
+else 
+    echo "Command not found";
+fi;
