@@ -221,7 +221,7 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn token_uri(ref self: ContractState, token_id: u256) -> Array<felt252> {
+    fn token_uri(self: @ContractState, token_id: u256) -> Array<felt252> {
         let unsafe_state = ERC721::unsafe_new_contract_state();
         assert(ERC721::InternalImpl::_exists(@unsafe_state, token_id), 'ERC721: invalid token ID');
         let base_uri = self._base_uri.read();

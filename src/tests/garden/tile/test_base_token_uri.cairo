@@ -55,7 +55,7 @@ fn test_token_uri_with_all_good() {
     let signature_s = 0x60af0a432adc4816eaeacb618dde31971c7c18423c227cb49a8f293dd06c94c;
     GardenTile::mint(ref state, tile_id, signature_r, signature_s);
     let tile_id_u256 = u256 { low: tile_id, high: 0 };
-    let token_uri = GardenTile::token_uri(ref state, tile_id_u256);
+    let token_uri = GardenTile::token_uri(@state, tile_id_u256);
     let mut expected_token_uri: Array<felt252> = ArrayTrait::new();
     expected_token_uri.append(base_uri);
     expected_token_uri.append(tile_id.into());
@@ -72,5 +72,5 @@ fn test_token_uri_when_id_not_minted() {
     GardenTile::set_base_uri(ref state, base_uri);
     let tile_id = 14;
     let tile_id_u256 = u256 { low: tile_id, high: 0 };
-    let token_uri = GardenTile::token_uri(ref state, tile_id_u256);
+    let token_uri = GardenTile::token_uri(@state, tile_id_u256);
 }
