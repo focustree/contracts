@@ -27,10 +27,13 @@ fn setup() -> GardenTile::ContractState {
 fn test_set_base_uri_when_owner() {
     let mut state = setup();
     set_caller_address(OWNER());
-    let base_uri = 184555836509371486643729180464952852387281955161842107580111539754880492847;
-    GardenTile::set_base_uri(ref state, base_uri);
-    let res = GardenTile::get_base_uri(@state);
-    assert(res == base_uri, 'Base Uri not setted well');
+    let base_uri_1 = 596332069898665371898575320416059506299170088750;
+    let base_uri_2 = 2284379318062025589193820443702490968005305647;
+    GardenTile::set_base_uri(ref state, base_uri_1, base_uri_2);
+    let res = GardenTile::get_base_uri_1(@state);
+    assert(res == base_uri_1, 'Base Uri 1 not setted well');
+    let res2 = GardenTile::get_base_uri_2(@state);
+    assert(res2 == base_uri_2, 'Base Uri 2 not setted well');
 }
 
 #[test]
@@ -49,8 +52,9 @@ fn test_set_base_uri_when_not_owner() {
 fn test_token_uri_with_all_good() {
     let mut state = setup();
     set_caller_address(OWNER());
-    let base_uri = 184555836509371486643729180464952852387281955161842107580111539754880492847;
-    GardenTile::set_base_uri(ref state, base_uri);
+    let base_uri_1 = 596332069898665371898575320416059506299170088750;
+    let base_uri_2 = 2284379318062025589193820443702490968005305647;
+    GardenTile::set_base_uri(ref state, base_uri_1, base_uri_2);
     let signer = 0x6456f9bc55067882db6e28461aa53a5cb38c55b14b82211fe3844e62c143670;
     GardenTile::set_signer(ref state, signer);
     let tile_id = 14;
@@ -62,7 +66,8 @@ fn test_token_uri_with_all_good() {
     let mut expected_token_uri: Array<felt252> = ArrayTrait::new();
     let ascii_array = tile_id_u256.low.to_ascii_array();
     let mut ascii_array_reverse = ascii_array.reverse();
-    expected_token_uri.append(base_uri);
+    expected_token_uri.append(base_uri_1);
+    expected_token_uri.append(base_uri_2);
     expected_token_uri.append_all(ref ascii_array_reverse);
     assert(expected_token_uri == token_uri, 'Token Uri is wrong');
 }
@@ -73,8 +78,9 @@ fn test_token_uri_with_all_good() {
 fn test_token_uri_when_id_not_minted() {
     let mut state = setup();
     set_caller_address(OWNER());
-    let base_uri = 184555836509371486643729180464952852387281955161842107580111539754880492847;
-    GardenTile::set_base_uri(ref state, base_uri);
+    let base_uri_1 = 596332069898665371898575320416059506299170088750;
+    let base_uri_2 = 2284379318062025589193820443702490968005305647;
+    GardenTile::set_base_uri(ref state, base_uri_1, base_uri_2);
     let tile_id = 14;
     let tile_id_u256 = u256 { low: tile_id, high: 0 };
     let token_uri = GardenTile::token_uri(@state, tile_id_u256);
