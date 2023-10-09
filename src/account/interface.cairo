@@ -25,3 +25,10 @@ trait FocusAccountABI<TState> {
         self: @TState, class_hash: felt252, contract_address_salt: felt252, _public_key: felt252
     ) -> felt252;
 }
+
+#[starknet::interface]
+trait ISRC6<TState> {
+    fn __execute__(ref self: TState, calls: Array<Call>) -> Array<Span<felt252>>;
+    fn __validate__(ref self: TState, calls: Array<Call>) -> felt252;
+    fn is_valid_signature(self: @TState, hash: felt252, signature: Array<felt252>) -> felt252;
+}

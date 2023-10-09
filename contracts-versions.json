@@ -1,0 +1,9 @@
+{
+  "testnet": {
+    "account": {
+      "1": {
+        "classHash": "0x0251cac7b2f45d255b83b7a06dcdef70c8a8752f00ea776517c1c2243c7a06e5"
+      }
+    }
+  }
+}

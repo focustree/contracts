@@ -15,6 +15,7 @@ mod FocusAccount {
     use openzeppelin::introspection::{interface::{ISRC5, ISRC5Camel}, src5::SRC5};
     use openzeppelin::upgrades::upgradeable::Upgradeable;
     use focustree::upgrade::interface::IUpgradeable;
+    use focustree::account::interface::{ISRC6};
 
 
     #[storage]
@@ -44,13 +45,13 @@ mod FocusAccount {
     }
 
     #[external(v0)]
-    impl SRC6Impl of interface::ISRC6<ContractState> {
-        fn __execute__(self: @ContractState, mut calls: Array<Call>) -> Array<Span<felt252>> {
+    impl SRC6Impl of ISRC6<ContractState> {
+        fn __execute__(ref self: ContractState, mut calls: Array<Call>) -> Array<Span<felt252>> {
             let mut unsafe_state = Account::unsafe_new_contract_state();
             Account::SRC6Impl::__execute__(@unsafe_state, calls)
         }
 
-        fn __validate__(self: @ContractState, mut calls: Array<Call>) -> felt252 {
+        fn __validate__(ref self: ContractState, mut calls: Array<Call>) -> felt252 {
             let mut unsafe_state = Account::unsafe_new_contract_state();
             Account::InternalImpl::validate_transaction(@unsafe_state)
         }

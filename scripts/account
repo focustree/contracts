@@ -2,9 +2,10 @@
 ACCOUNT_SIERRA_PATH=./target/dev/focustree_FocusAccount.sierra.json
 
 if [[ $1 == "declare" ]]; then
-    starkli declare --private-key $STARKNET_PRIVATE_KEY $ACCOUNT_SIERRA_PATH
+    scarb build
+    starkli declare $ACCOUNT_SIERRA_PATH
 elif [[ $1 == "fetch" ]]; then
     starkli account fetch $STARKNET_ACCOUNT_ADDRESS > .starkli/$2         
 else 
-    echo "Command not found";
+    echo "Available commands: declare, fetch";
 fi;
