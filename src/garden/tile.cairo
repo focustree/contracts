@@ -1,5 +1,6 @@
 #[starknet::contract]
 mod GardenTile {
+    use alexandria_data_structures::array_ext::ArrayTraitExt;
     use debug::PrintTrait;
     use core::ecdsa;
     use hash::LegacyHash;
@@ -13,6 +14,7 @@ mod GardenTile {
     use openzeppelin::introspection::interface::ISRC5;
     use focustree::upgrade::interface::IUpgradeable;
     use array::ArrayTrait;
+    use alexandria_ascii::ToAsciiArrayTrait;
 
 
     #[storage]
@@ -228,7 +230,9 @@ mod GardenTile {
         let token_id_low = token_id.low;
         let mut uri: Array<felt252> = ArrayTrait::new();
         uri.append(base_uri);
-        uri.append(token_id_low.into());
+        let ascii_array = token_id_low.to_ascii_array();
+        let mut ascii_array_reverse = ascii_array.reverse();
+        uri.append_all(ref ascii_array_reverse);
         return uri;
     }
 

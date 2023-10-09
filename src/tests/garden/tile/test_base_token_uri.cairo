@@ -6,6 +6,9 @@ use starknet::{
 use openzeppelin::tests::utils::constants::{OWNER, OTHER};
 use debug::PrintTrait;
 use openzeppelin::access::ownable::ownable::Ownable;
+use array::ArrayTrait;
+use alexandria_ascii::ToAsciiArrayTrait;
+use alexandria_data_structures::array_ext::ArrayTraitExt;
 
 fn STATE() -> GardenTile::ContractState {
     GardenTile::contract_state_for_testing()
@@ -57,8 +60,10 @@ fn test_token_uri_with_all_good() {
     let tile_id_u256 = u256 { low: tile_id, high: 0 };
     let token_uri = GardenTile::token_uri(@state, tile_id_u256);
     let mut expected_token_uri: Array<felt252> = ArrayTrait::new();
+    let ascii_array = tile_id_u256.low.to_ascii_array();
+    let mut ascii_array_reverse = ascii_array.reverse();
     expected_token_uri.append(base_uri);
-    expected_token_uri.append(tile_id.into());
+    expected_token_uri.append_all(ref ascii_array_reverse);
     assert(expected_token_uri == token_uri, 'Token Uri is wrong');
 }
 
