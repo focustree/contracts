@@ -1,6 +1,5 @@
 #[starknet::contract]
 mod GardenTile {
-
     use debug::PrintTrait;
     use core::ecdsa;
     use hash::LegacyHash;
@@ -13,6 +12,7 @@ mod GardenTile {
     use openzeppelin::access::ownable::{interface::IOwnable, ownable::Ownable};
     use openzeppelin::introspection::interface::ISRC5;
     use focustree::upgrade::interface::IUpgradeable;
+    use array::ArrayTrait;
 
 
     #[storage]
@@ -20,6 +20,7 @@ mod GardenTile {
         _total_supply: u256,
         _signer: felt252,
         _is_tile_minted: LegacyMap<u128, bool>,
+        _base_uri: felt252
     }
 
     #[event]
@@ -151,24 +152,6 @@ mod GardenTile {
 
 
     #[external(v0)]
-    impl ERC721MetadaImpl of IERC721Metadata<ContractState> {
-        fn name(self: @ContractState) -> felt252 {
-            let unsafe_state = ERC721::unsafe_new_contract_state();
-            ERC721::ERC721MetadataImpl::name(@unsafe_state)
-        }
-
-        fn symbol(self: @ContractState) -> felt252 {
-            let unsafe_state = ERC721::unsafe_new_contract_state();
-            ERC721::ERC721MetadataImpl::symbol(@unsafe_state)
-        }
-
-        fn token_uri(self: @ContractState, token_id: u256) -> felt252 {
-            let unsafe_state = ERC721::unsafe_new_contract_state();
-            ERC721::ERC721MetadataImpl::token_uri(@unsafe_state, token_id)
-        }
-    }
-
-    #[external(v0)]
     impl SRC5Impl of ISRC5<ContractState> {
         fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
             let unsafe_state = ERC721::unsafe_new_contract_state();
@@ -223,5 +206,36 @@ mod GardenTile {
     #[external(v0)]
     fn get_signer(self: @ContractState) -> felt252 {
         self._signer.read()
+    }
+
+    #[external(v0)]
+    fn set_base_uri(ref self: ContractState, base_uri: felt252) {
+        let unsafe_state = Ownable::unsafe_new_contract_state();
+        Ownable::InternalImpl::assert_only_owner(@unsafe_state);
+        self._base_uri.write(base_uri);
+    }
+
+    #[external(v0)]
+    fn token_uri(ref self: ContractState, token_id: u256) -> Array<felt252> {
+        let unsafe_state = ERC721::unsafe_new_contract_state();
+        assert(ERC721::InternalImpl::_exists(@unsafe_state, token_id), 'ERC721: invalid token ID');
+        let base_uri = self._base_uri.read();
+        let token_id_low = token_id.low;
+        let mut uri: Array<felt252> = ArrayTrait::new();
+        uri.append(base_uri);
+        uri.append(token_id_low.into());
+        return uri;
+    }
+
+    #[external(v0)]
+    fn name(self: @ContractState) -> felt252 {
+        let unsafe_state = ERC721::unsafe_new_contract_state();
+        ERC721::ERC721MetadataImpl::name(@unsafe_state)
+    }
+
+    #[external(v0)]
+    fn symbol(self: @ContractState) -> felt252 {
+        let unsafe_state = ERC721::unsafe_new_contract_state();
+        ERC721::ERC721MetadataImpl::symbol(@unsafe_state)
     }
 }
