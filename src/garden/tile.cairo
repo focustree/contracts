@@ -1,5 +1,6 @@
 #[starknet::contract]
 mod GardenTile {
+    use openzeppelin::token::erc721::erc721::ERC721::ERC721_owners::InternalContractMemberStateTrait;
     use alexandria_data_structures::array_ext::ArrayTraitExt;
     use debug::PrintTrait;
     use core::ecdsa;
@@ -23,7 +24,6 @@ mod GardenTile {
     struct Storage {
         _total_supply: u256,
         _signer: felt252,
-        _is_tile_minted: LegacyMap<u128, bool>,
         _base_uri: felt252,
     }
 
@@ -72,7 +72,7 @@ mod GardenTile {
         Ownable::InternalImpl::initializer(ref unsafe_ownable_state, owner);
 
         let mut unsafe_erc721_state = ERC721::unsafe_new_contract_state();
-        ERC721::InternalImpl::initializer(ref unsafe_erc721_state, 'Garden Tile', 'TILE');
+        ERC721::InternalImpl::initializer(ref unsafe_erc721_state, 'Focus Tree | Tile', 'TILE');
     }
 
     #[external(v0)]
@@ -221,17 +221,18 @@ mod GardenTile {
 
     #[external(v0)]
     fn mint(ref self: ContractState, tile_id: u128, signature_r: felt252, signature_s: felt252) {
-        assert(self._is_tile_minted.read(tile_id) == false, 'Tile already minted');
+        let mut unsafe_state = ERC721::unsafe_new_contract_state();
+        let tile_id_u256 = u256 { low: tile_id, high: 0 };
+        let is_minted = unsafe_state.ERC721_owners.read(tile_id_u256);
+        let caller_address = get_caller_address();
+        assert(caller_address == is_minted, 'Tile already minted');
         let message_hash = message_hash(tile_id);
         assert(
             verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature'
         );
-        let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let supply = self._total_supply.read();
         self._total_supply.write(supply + 1);
-        self._is_tile_minted.write(tile_id, true);
-        let tile_id_u256 = u256 { low: tile_id, high: 0 };
-        ERC721::InternalImpl::_mint(ref unsafe_state, get_caller_address(), tile_id_u256);
+        ERC721::InternalImpl::_mint(ref unsafe_state, caller_address, tile_id_u256);
     }
 
     fn verify_signature(

@@ -53,7 +53,7 @@ mod FocusAccount {
 
         fn __validate__(ref self: ContractState, mut calls: Array<Call>) -> felt252 {
             let mut unsafe_state = Account::unsafe_new_contract_state();
-            Account::InternalImpl::validate_transaction(@unsafe_state)
+            Account::SRC6Impl::__validate__(@unsafe_state, calls)
         }
 
         fn is_valid_signature(
@@ -78,7 +78,7 @@ mod FocusAccount {
     impl DeclarerImpl of interface::IDeclarer<ContractState> {
         fn __validate_declare__(self: @ContractState, class_hash: felt252) -> felt252 {
             let mut unsafe_state = Account::unsafe_new_contract_state();
-            Account::InternalImpl::validate_transaction(@unsafe_state)
+            Account::DeclarerImpl::__validate_declare__(@unsafe_state, class_hash)
         }
     }
 
@@ -132,6 +132,6 @@ mod FocusAccount {
         _public_key: felt252
     ) -> felt252 {
         let mut unsafe_state = Account::unsafe_new_contract_state();
-        Account::InternalImpl::validate_transaction(@unsafe_state)
+        Account::__validate_deploy__(@unsafe_state, class_hash, contract_address_salt, _public_key)
     }
 }
