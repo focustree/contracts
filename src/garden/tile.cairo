@@ -68,7 +68,7 @@ mod GardenTile {
     fn constructor(ref self: ContractState) {
         let mut unsafe_ownable_state = Ownable::unsafe_new_contract_state();
         let owner =
-            contract_address_const::<0x05161ae78b651b239167b3ed0c1b2f09983cbd9ff433c14fb31472ce8008ac1d>();
+            contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>();
         Ownable::InternalImpl::initializer(ref unsafe_ownable_state, owner);
 
         let mut unsafe_erc721_state = ERC721::unsafe_new_contract_state();
