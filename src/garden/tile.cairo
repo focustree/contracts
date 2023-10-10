@@ -8,10 +8,12 @@ mod GardenTile {
         get_caller_address, get_contract_address, get_tx_info, ClassHash, ContractAddress,
         contract_address_to_felt252, contract_address_const
     };
-    use openzeppelin::token::erc721::{ERC721, interface::{IERC721, IERC721Metadata}};
+    use openzeppelin::token::erc721::{
+        ERC721, interface::{IERC721, IERC721CamelOnly, IERC721Metadata}
+    };
     use openzeppelin::upgrades::{upgradeable::Upgradeable};
     use openzeppelin::access::ownable::{interface::IOwnable, ownable::Ownable};
-    use openzeppelin::introspection::interface::ISRC5;
+    use openzeppelin::introspection::interface::{ISRC5, ISRC5Camel};
     use focustree::upgrade::interface::IUpgradeable;
     use array::ArrayTrait;
     use alexandria_ascii::ToAsciiArrayTrait;
@@ -161,12 +163,60 @@ mod GardenTile {
         }
     }
 
+    #[external(v0)]
+    impl ERC721CamelOnlyImpl of IERC721CamelOnly<ContractState> {
+        fn balanceOf(self: @ContractState, account: ContractAddress) -> u256 {
+            ERC721Impl::balance_of(self, account)
+        }
+
+        fn ownerOf(self: @ContractState, tokenId: u256) -> ContractAddress {
+            ERC721Impl::owner_of(self, tokenId)
+        }
+
+        fn getApproved(self: @ContractState, tokenId: u256) -> ContractAddress {
+            ERC721Impl::get_approved(self, tokenId)
+        }
+
+        fn isApprovedForAll(
+            self: @ContractState, owner: ContractAddress, operator: ContractAddress
+        ) -> bool {
+            ERC721Impl::is_approved_for_all(self, owner, operator)
+        }
+
+        fn setApprovalForAll(ref self: ContractState, operator: ContractAddress, approved: bool) {
+            ERC721Impl::set_approval_for_all(ref self, operator, approved)
+        }
+
+        fn transferFrom(
+            ref self: ContractState, from: ContractAddress, to: ContractAddress, tokenId: u256
+        ) {
+            ERC721Impl::transfer_from(ref self, from, to, tokenId)
+        }
+
+        fn safeTransferFrom(
+            ref self: ContractState,
+            from: ContractAddress,
+            to: ContractAddress,
+            tokenId: u256,
+            data: Span<felt252>
+        ) {
+            ERC721Impl::safe_transfer_from(ref self, from, to, tokenId, data)
+        }
+    }
+
 
     #[external(v0)]
     impl SRC5Impl of ISRC5<ContractState> {
         fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
             let unsafe_state = ERC721::unsafe_new_contract_state();
             ERC721::SRC5Impl::supports_interface(@unsafe_state, interface_id)
+        }
+    }
+
+    #[external(v0)]
+    impl SRC5CamelImpl of ISRC5Camel<ContractState> {
+        fn supportsInterface(self: @ContractState, interfaceId: felt252) -> bool {
+            return SRC5Impl::supports_interface(self, interfaceId);
         }
     }
 
@@ -215,6 +265,11 @@ mod GardenTile {
     }
 
     #[external(v0)]
+    fn totalSupply(self: @ContractState) -> u256 {
+        return total_supply(self);
+    }
+
+    #[external(v0)]
     fn get_signer(self: @ContractState) -> felt252 {
         self._signer.read()
     }
@@ -251,6 +306,11 @@ mod GardenTile {
         let mut ascii_array_reverse = ascii_array.reverse();
         uri.append_all(ref ascii_array_reverse);
         return uri;
+    }
+
+    #[external(v0)]
+    fn tokenUri(self: @ContractState, token_id: u256) -> Array<felt252> {
+        return token_uri(self, token_id);
     }
 
     #[external(v0)]
