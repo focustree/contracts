@@ -17,7 +17,7 @@ use openzeppelin::access::ownable::ownable::Ownable;
 
 fn deploy_garden_tile() -> GardenTileABIDispatcher {
     set_contract_address(
-        contract_address_const::<0x05161ae78b651b239167b3ed0c1b2f09983cbd9ff433c14fb31472ce8008ac1d>()
+        contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>()
     );
     let calldata: Array<felt252> = array![];
     let address: ContractAddress = deploy(GardenTile::TEST_CLASS_HASH, calldata);
@@ -35,7 +35,7 @@ fn test_upgrade_with_class_hash_zero() {
     let v1 = deploy_garden_tile();
 
     set_caller_address(
-        contract_address_const::<0x05161ae78b651b239167b3ed0c1b2f09983cbd9ff433c14fb31472ce8008ac1d>()
+        contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>()
     );
     v1.upgrade(Zeroable::zero());
 }
@@ -45,7 +45,7 @@ fn test_upgrade_with_class_hash_zero() {
 fn test_new_selector_after_upgrade() {
     let v1 = deploy_garden_tile();
     set_caller_address(
-        contract_address_const::<0x05161ae78b651b239167b3ed0c1b2f09983cbd9ff433c14fb31472ce8008ac1d>()
+        contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>()
     );
 
     v1.upgrade(Toto::TEST_CLASS_HASH.try_into().unwrap());
