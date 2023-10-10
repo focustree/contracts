@@ -24,8 +24,7 @@ mod GardenTile {
         _total_supply: u256,
         _signer: felt252,
         _is_tile_minted: LegacyMap<u128, bool>,
-        _base_uri_1: felt252,
-        _base_uri_2: felt252
+        _base_uri: felt252,
     }
 
     #[event]
@@ -275,33 +274,25 @@ mod GardenTile {
     }
 
     #[external(v0)]
-    fn set_base_uri(ref self: ContractState, base_uri_1: felt252, base_uri_2: felt252,) {
+    fn set_base_uri(ref self: ContractState, base_uri: felt252) {
         let unsafe_state = Ownable::unsafe_new_contract_state();
         Ownable::InternalImpl::assert_only_owner(@unsafe_state);
-        self._base_uri_1.write(base_uri_1);
-        self._base_uri_2.write(base_uri_2);
+        self._base_uri.write(base_uri);
     }
 
     #[external(v0)]
-    fn get_base_uri_1(self: @ContractState) -> felt252 {
-        return self._base_uri_1.read();
-    }
-
-    #[external(v0)]
-    fn get_base_uri_2(self: @ContractState) -> felt252 {
-        return self._base_uri_2.read();
+    fn get_base_uri(self: @ContractState) -> felt252 {
+        return self._base_uri.read();
     }
 
     #[external(v0)]
     fn token_uri(self: @ContractState, token_id: u256) -> Array<felt252> {
         let unsafe_state = ERC721::unsafe_new_contract_state();
         assert(ERC721::InternalImpl::_exists(@unsafe_state, token_id), 'ERC721: invalid token ID');
-        let base_uri_1 = self._base_uri_1.read();
-        let base_uri_2 = self._base_uri_2.read();
+        let base_uri = self._base_uri.read();
         let token_id_low = token_id.low;
         let mut uri: Array<felt252> = ArrayTrait::new();
-        uri.append(base_uri_1);
-        uri.append(base_uri_2);
+        uri.append(base_uri);
         let ascii_array = token_id_low.to_ascii_array();
         let mut ascii_array_reverse = ascii_array.reverse();
         uri.append_all(ref ascii_array_reverse);
