@@ -1,0 +1,9 @@
+#!/bin/zsh
+ACCOUNT_SIERRA_PATH=./target/dev/focustree_GardenTile.sierra.json
+
+if [[ $1 == "declare" ]]; then
+    scarb build
+    starkli declare $ACCOUNT_SIERRA_PATH
+else 
+    echo "Available commands: declare";
+fi;
