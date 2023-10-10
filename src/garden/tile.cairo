@@ -24,6 +24,7 @@ mod GardenTile {
     struct Storage {
         _signer: felt252,
         _base_uri: felt252,
+        _total_supply: u256,
     }
 
     #[event]
@@ -229,6 +230,9 @@ mod GardenTile {
             verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature'
         );
 
+        let supply = self._total_supply.read();
+        self._total_supply.write(supply + 1);
+
         let caller_address = get_caller_address();
         ERC721::InternalImpl::_mint(ref unsafe_state, caller_address, tile_id_u256);
     }
@@ -260,6 +264,15 @@ mod GardenTile {
     #[external(v0)]
     fn get_signer(self: @ContractState) -> felt252 {
         self._signer.read()
+    }
+
+    #[external(v0)]
+    fn total_supply(self: @ContractState) -> u256 {
+        self._total_supply.read()
+    }
+    #[external(v0)]
+    fn totalSupply(self: @ContractState) -> u256 {
+        return total_supply(self);
     }
 
     #[external(v0)]
