@@ -1,6 +1,6 @@
 #[starknet::contract]
 mod GardenTile {
-    use openzeppelin::token::erc721::erc721::ERC721::ERC721_owners::InternalContractMemberStateTrait;
+    use openzeppelin::token::erc721::erc721::ERC721::InternalTrait;
     use alexandria_data_structures::array_ext::ArrayTraitExt;
     use debug::PrintTrait;
     use core::ecdsa;
@@ -22,7 +22,6 @@ mod GardenTile {
 
     #[storage]
     struct Storage {
-        _total_supply: u256,
         _signer: felt252,
         _base_uri: felt252,
     }
@@ -223,15 +222,14 @@ mod GardenTile {
     fn mint(ref self: ContractState, tile_id: u128, signature_r: felt252, signature_s: felt252) {
         let mut unsafe_state = ERC721::unsafe_new_contract_state();
         let tile_id_u256 = u256 { low: tile_id, high: 0 };
-        let is_minted = unsafe_state.ERC721_owners.read(tile_id_u256);
-        let caller_address = get_caller_address();
-        assert(caller_address == is_minted, 'Tile already minted');
+        assert(!unsafe_state._exists(tile_id_u256), 'Tile already minted');
+
         let message_hash = message_hash(tile_id);
         assert(
             verify_signature(ref self, message_hash, signature_r, signature_s), 'Invalid Signature'
         );
-        let supply = self._total_supply.read();
-        self._total_supply.write(supply + 1);
+
+        let caller_address = get_caller_address();
         ERC721::InternalImpl::_mint(ref unsafe_state, caller_address, tile_id_u256);
     }
 
@@ -257,16 +255,6 @@ mod GardenTile {
         let mut message_hash = LegacyHash::hash(0, (contract_address, caller_address, tile_id, 3));
 
         return message_hash;
-    }
-
-    #[external(v0)]
-    fn total_supply(self: @ContractState) -> u256 {
-        self._total_supply.read()
-    }
-
-    #[external(v0)]
-    fn totalSupply(self: @ContractState) -> u256 {
-        return total_supply(self);
     }
 
     #[external(v0)]
