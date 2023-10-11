@@ -1,9 +1,15 @@
 {
-  "testnet": {
-    "account": {
-      "1": {
-        "classHash": "0x0251cac7b2f45d255b83b7a06dcdef70c8a8752f00ea776517c1c2243c7a06e5"
-      }
+  "account": {
+    "latest": "1",
+    "1": {
+      "classHash": "0x0251cac7b2f45d255b83b7a06dcdef70c8a8752f00ea776517c1c2243c7a06e5"
+    }
+  },
+  "tile": {
+    "latest": "1",
+    "1": {
+      "classHash": "0x047f56c4572d11b6847e61de41cb268c3667b0d1b55e14aa183c8d802e5a72ac",
+      "contractAddress": "0x0377c2d65debb3978ea81904e7d59740da1f07412e30d01c5ded1c5d6f1ddc43"
     }
   }
 }
