@@ -19,6 +19,12 @@ mod GardenTile {
     use array::ArrayTrait;
     use alexandria_ascii::ToAsciiArrayTrait;
 
+    const NAME: felt252 = 'Focus Tree | Tile';
+    const SYMBOL: felt252 = 'TILE';
+    fn FOCUS_TREE_MULTISIG() -> ContractAddress {
+        contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>()
+    }
+
 
     #[storage]
     struct Storage {
@@ -66,9 +72,7 @@ mod GardenTile {
     #[constructor]
     fn constructor(ref self: ContractState) {
         let mut unsafe_ownable_state = Ownable::unsafe_new_contract_state();
-        let owner =
-            contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>();
-        Ownable::InternalImpl::initializer(ref unsafe_ownable_state, owner);
+        Ownable::InternalImpl::initializer(ref unsafe_ownable_state, FOCUS_TREE_MULTISIG());
 
         let mut unsafe_erc721_state = ERC721::unsafe_new_contract_state();
         ERC721::InternalImpl::initializer(ref unsafe_erc721_state, 'Focus Tree | Tile', 'TILE');

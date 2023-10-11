@@ -16,9 +16,7 @@ use openzeppelin::access::ownable::ownable::Ownable;
 //
 
 fn deploy_garden_tile() -> GardenTileABIDispatcher {
-    set_contract_address(
-        contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>()
-    );
+    set_contract_address(GardenTile::FOCUS_TREE_MULTISIG());
     let calldata: Array<felt252> = array![];
     let address: ContractAddress = deploy(GardenTile::TEST_CLASS_HASH, calldata);
     GardenTileABIDispatcher { contract_address: address }
@@ -33,10 +31,8 @@ fn deploy_garden_tile() -> GardenTileABIDispatcher {
 #[should_panic(expected: ('Class hash cannot be zero', 'ENTRYPOINT_FAILED',))]
 fn test_upgrade_with_class_hash_zero() {
     let v1 = deploy_garden_tile();
+    set_caller_address(GardenTile::FOCUS_TREE_MULTISIG());
 
-    set_caller_address(
-        contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>()
-    );
     v1.upgrade(Zeroable::zero());
 }
 
@@ -44,9 +40,7 @@ fn test_upgrade_with_class_hash_zero() {
 #[available_gas(2000000)]
 fn test_new_selector_after_upgrade() {
     let v1 = deploy_garden_tile();
-    set_caller_address(
-        contract_address_const::<0x040b0060a849f50C27648a31dFDB7816Bf9bDc9D4bD03cDd774AD965E02C82Aa>()
-    );
+    set_caller_address(GardenTile::FOCUS_TREE_MULTISIG());
 
     v1.upgrade(Toto::TEST_CLASS_HASH.try_into().unwrap());
     let v2 = ITotoDispatcher { contract_address: v1.contract_address };
